@@ -6,6 +6,7 @@ import { factories } from '@strapi/strapi';
 import { AvitoWebhookPayload } from '../../../avito/avito-types';
 import { AvitoWebhookHandler } from '../../../avito/webhook-handler.service';
 import { AvitoApiService } from '../../../avito/avito-api.service';
+import { AvitoAuthService } from '../../../avito/avito-auth.service';
 import { DeepSeekApiService } from '../../../llm/deepseek-api.service';
 import { QuestionAnswerService } from '../../../services/question-answer.service';
 import { validateEnv } from '../../../config/env.validation';
@@ -25,7 +26,8 @@ export default factories.createCoreController('api::question.question', ({ strap
       }
 
       // Инициализируем сервисы
-      const avitoApiService = new AvitoApiService(env.AVITO_ACCESS_TOKEN, env.AVITO_USER_ID);
+      const avitoAuthService = new AvitoAuthService(env.AVITO_CLIENT_ID, env.AVITO_CLIENT_SECRET);
+      const avitoApiService = new AvitoApiService(avitoAuthService, env.AVITO_USER_ID);
       const deepSeekService = new DeepSeekApiService(env.DEEPSEEK_API_KEY, env.DEEPSEEK_MODEL);
       const questionAnswerService = new QuestionAnswerService(strapi);
       const webhookHandler = new AvitoWebhookHandler(

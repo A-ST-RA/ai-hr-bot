@@ -22,7 +22,8 @@ const urlOrIpSchema = z.string().refine(
 ).optional();
 
 const envSchema = z.object({
-  AVITO_ACCESS_TOKEN: z.string().min(1, 'AVITO_ACCESS_TOKEN is required'),
+  AVITO_CLIENT_ID: z.string().min(1, 'AVITO_CLIENT_ID is required'),
+  AVITO_CLIENT_SECRET: z.string().min(1, 'AVITO_CLIENT_SECRET is required'),
   AVITO_USER_ID: z.string().min(1, 'AVITO_USER_ID is required'),
   DEEPSEEK_API_KEY: z.string().min(1, 'DEEPSEEK_API_KEY is required'),
   DEEPSEEK_MODEL: z.string().optional().default('deepseek-chat'),
@@ -39,7 +40,8 @@ export type EnvConfig = z.infer<typeof envSchema>;
  */
 export function validateEnv(): EnvConfig {
   const env = {
-    AVITO_ACCESS_TOKEN: process.env.AVITO_ACCESS_TOKEN,
+    AVITO_CLIENT_ID: process.env.AVITO_CLIENT_ID,
+    AVITO_CLIENT_SECRET: process.env.AVITO_CLIENT_SECRET,
     AVITO_USER_ID: process.env.AVITO_USER_ID,
     DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
     DEEPSEEK_MODEL: process.env.DEEPSEEK_MODEL,

@@ -1,4 +1,5 @@
 import { AvitoApiService } from './avito-api.service';
+import { AvitoAuthService } from './avito-auth.service';
 import { SendMessageData, DeleteMessageData, RegisterWebhookData } from '../bot-api-service.interface';
 
 // Мокаем fetch
@@ -6,12 +7,19 @@ global.fetch = jest.fn();
 
 describe('AvitoApiService', () => {
   let avitoApiService: AvitoApiService;
+  let mockAuthService: jest.Mocked<AvitoAuthService>;
   const mockAccessToken = 'test-access-token';
   const mockUserId = '12345';
 
   beforeEach(() => {
-    avitoApiService = new AvitoApiService(mockAccessToken, mockUserId);
+    // Создаем мок для AvitoAuthService
+    mockAuthService = {
+      getAccessToken: jest.fn().mockResolvedValue(mockAccessToken),
+    } as any;
+
+    avitoApiService = new AvitoApiService(mockAuthService, mockUserId);
     (fetch as jest.Mock).mockClear();
+    (mockAuthService.getAccessToken as jest.Mock).mockClear();
   });
 
   describe('sendMessage', () => {
@@ -39,6 +47,7 @@ describe('AvitoApiService', () => {
 
       const result = await avitoApiService.sendMessage(sendData);
 
+      expect(mockAuthService.getAccessToken).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledWith(
         `https://api.avito.ru/messenger/v1/accounts/${mockUserId}/chats/chat-123/messages`,
         {
@@ -91,6 +100,7 @@ describe('AvitoApiService', () => {
 
       await avitoApiService.deleteMessage(deleteData);
 
+      expect(mockAuthService.getAccessToken).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledWith(
         `https://api.avito.ru/messenger/v1/accounts/${mockUserId}/chats/chat-123/messages/msg-123`,
         {
@@ -133,6 +143,7 @@ describe('AvitoApiService', () => {
 
       const result = await avitoApiService.registerWebhook(webhookData);
 
+      expect(mockAuthService.getAccessToken).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledWith(
         'https://api.avito.ru/messenger/v3/webhook',
         {

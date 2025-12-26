@@ -1,6 +1,7 @@
 import type { Core } from '@strapi/strapi';
 import { validateEnv } from './config/env.validation';
 import { AvitoApiService } from './avito/avito-api.service';
+import { AvitoAuthService } from './avito/avito-auth.service';
 
 export default {
   /**
@@ -35,8 +36,12 @@ export default {
       if (env.WEBHOOK_URL) {
         strapi.log.info('🔗 Registering Avito webhook...');
 
+        const avitoAuthService = new AvitoAuthService(
+          env.AVITO_CLIENT_ID,
+          env.AVITO_CLIENT_SECRET
+        );
         const avitoApiService = new AvitoApiService(
-          env.AVITO_ACCESS_TOKEN,
+          avitoAuthService,
           env.AVITO_USER_ID
         );
 

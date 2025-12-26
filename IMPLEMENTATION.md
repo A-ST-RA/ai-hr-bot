@@ -8,23 +8,29 @@
 
 ### Компоненты
 
-1. **AvitoApiService** (`src/avito/avito-api.service.ts`)
+1. **AvitoAuthService** (`src/avito/avito-auth.service.ts`)
+   - Сервис для получения accessToken через OAuth 2 client_credentials flow
+   - Автоматически кэширует токен до истечения срока действия
+   - Документация: https://developers.avito.ru/api-catalog/auth/documentation#ApiDocumentationBlock
+
+2. **AvitoApiService** (`src/avito/avito-api.service.ts`)
    - Реализация интерфейса `BotApiService` для работы с Avito API
    - Методы: `sendMessage`, `deleteMessage`, `registerWebhook`
+   - Автоматически получает accessToken через `AvitoAuthService` при каждом запросе
 
-2. **DeepSeekApiService** (`src/llm/deepseek-api.service.ts`)
+3. **DeepSeekApiService** (`src/llm/deepseek-api.service.ts`)
    - Сервис для работы с DeepSeek API
    - Определяет наиболее подходящий вопрос из базы данных по запросу пользователя
 
-3. **QuestionAnswerService** (`src/services/question-answer.service.ts`)
+4. **QuestionAnswerService** (`src/services/question-answer.service.ts`)
    - Работа с вопросами и ответами из базы данных Strapi
    - Получение ответов по ключу
 
-4. **AvitoWebhookHandler** (`src/avito/webhook-handler.service.ts`)
+5. **AvitoWebhookHandler** (`src/avito/webhook-handler.service.ts`)
    - Обработчик входящих WebHook сообщений от Avito
    - Интегрирует все компоненты в единый поток
 
-5. **Webhook Controller** (`src/api/webhook/controllers/webhook.ts`)
+6. **Webhook Controller** (`src/api/webhook/controllers/webhook.ts`)
    - HTTP endpoint для приема WebHook запросов от Avito
 
 ## Настройка
@@ -35,7 +41,8 @@
 
 ```env
 # Обязательные переменные
-AVITO_ACCESS_TOKEN=your_avito_access_token
+AVITO_CLIENT_ID=your_avito_client_id
+AVITO_CLIENT_SECRET=your_avito_client_secret
 AVITO_USER_ID=your_avito_user_id
 DEEPSEEK_API_KEY=your_deepseek_api_key
 
@@ -44,6 +51,11 @@ DEEPSEEK_MODEL=deepseek-chat  # по умолчанию deepseek-chat
 WEBHOOK_URL=https://your-domain.com/api/webhook/avito  # для автоматической регистрации webhook
 # WEBHOOK_URL также поддерживает IP-адреса: http://192.168.1.100:1337/api/webhook/avito
 ```
+
+**Получение AVITO_CLIENT_ID и AVITO_CLIENT_SECRET:**
+1. Перейдите на [страницу документации Avito API](https://developers.avito.ru/api-catalog/auth/documentation#ApiDocumentationBlock)
+2. Зарегистрируйте приложение и получите `client_id` и `client_secret`
+3. AccessToken будет автоматически получаться через OAuth 2 client_credentials flow при каждом запросе
 
 **Важно:**
 - ✅ Все обязательные переменные **автоматически проверяются** при старте приложения с помощью **Zod**
@@ -80,11 +92,20 @@ WebHook регистрируется автоматически при стар�
 Если вы хотите зарегистрировать webhook вручную, используйте:
 
 ```bash
+# Сначала получите access token через OAuth 2
+curl -X POST https://api.avito.ru/token \
+  -H "Authorization: Basic $(echo -n 'YOUR_CLIENT_ID:YOUR_CLIENT_SECRET' | base64)" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials"
+
+# Затем используйте полученный access_token для регистрации webhook
 curl -X POST https://api.avito.ru/messenger/v3/webhook \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://your-domain.com/api/webhook/avito"}'
 ```
+
+**Примечание:** Приложение автоматически получает accessToken при каждом запросе к API, поэтому ручная регистрация webhook обычно не требуется, если установлена переменная `WEBHOOK_URL`.
 
 **Примечание:** При автоматической регистрации webhook логируется в консоль. Если регистрация не удалась, приложение продолжит работу, но webhook нужно будет зарегистрировать вручную.
 
@@ -153,7 +174,8 @@ yarn test
 ```
 ❌ Environment variables validation failed:
 Invalid environment variables:
-AVITO_ACCESS_TOKEN: Required
+AVITO_CLIENT_ID: Required
+AVITO_CLIENT_SECRET: Required
 DEEPSEEK_API_KEY: Required
 WEBHOOK_URL: Invalid url
 ```

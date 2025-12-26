@@ -28,6 +28,7 @@ export class AvitoWebhookHandler {
    */
   async handleWebhook(payload: AvitoWebhookPayload): Promise<void> {
     // Проверяем тип сообщения
+    console.log(payload);
     if (payload.type !== 'message') {
       return;
     }
@@ -56,6 +57,8 @@ export class AvitoWebhookHandler {
         key: q.key,
         question: q.question || q.key, // Используем question если есть, иначе key
       }));
+      
+      console.log(questionsForLLM);
 
       // Отправляем в LLM для определения наиболее подходящего вопроса
       const matchedKey = await this.deepSeekService.findMatchingQuestion(
