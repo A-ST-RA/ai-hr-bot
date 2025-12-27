@@ -14,13 +14,18 @@ import { validateEnv } from '../../../config/env.validation';
 export default factories.createCoreController('api::question.question', ({ strapi }) => ({
   async handleAvitoWebhook(ctx) {
     try {
-      const payload = ctx.request.body as AvitoWebhookPayload;
+      const payload = ctx.request.body.payload as AvitoWebhookPayload;
 
+      // Возвращаем успешный ответ (Avito требует 200 OK)
+      ctx.body = { ok: true };
+      ctx.status = 200;
+      
       // Валидируем и получаем конфигурацию из переменных окружения
       let env;
       try {
         env = validateEnv();
       } catch (error: any) {
+        console.error(error);
         ctx.throw(500, `Invalid environment configuration: ${error.message}`);
         return;
       }
@@ -39,9 +44,7 @@ export default factories.createCoreController('api::question.question', ({ strap
       // Обрабатываем WebHook
       await webhookHandler.handleWebhook(payload);
 
-      // Возвращаем успешный ответ (Avito требует 200 OK)
-      ctx.body = { ok: true };
-      ctx.status = 200;
+      return
     } catch (error: any) {
       console.error('Error in webhook handler:', error);
       ctx.status = 500;

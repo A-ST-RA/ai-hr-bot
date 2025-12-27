@@ -28,7 +28,7 @@ export class AvitoWebhookHandler {
    */
   async handleWebhook(payload: AvitoWebhookPayload): Promise<void> {
     // Проверяем тип сообщения
-    console.log(payload);
+    console.log(payload)
     if (payload.type !== 'message') {
       return;
     }
@@ -48,6 +48,7 @@ export class AvitoWebhookHandler {
       return;
     }
 
+    console.log('[userQuestion]', userQuestion);
     try {
       // Получаем все вопросы из базы данных
       const allQuestions = await this.questionAnswerService.getAllQuestions();
@@ -79,6 +80,9 @@ export class AvitoWebhookHandler {
       };
 
       await this.botApiService.sendMessage(sendData);
+
+      // Отмечаем чат как прочитанный, чтобы Avito перестал отправлять повторные webhook
+      await this.botApiService.markChatAsRead({ chatId: message.chat_id });
     } catch (error) {
       console.error('Error processing webhook:', error);
 
@@ -91,8 +95,17 @@ export class AvitoWebhookHandler {
           text: defaultAnswer,
         };
         await this.botApiService.sendMessage(sendData);
+
+        // Отмечаем чат как прочитанный даже в случае ошибки
+        await this.botApiService.markChatAsRead({ chatId: message.chat_id });
       } catch (sendError) {
         console.error('Error sending default answer:', sendError);
+        // Пытаемся отметить как прочитанный даже если не удалось отправить ответ
+        try {
+          await this.botApiService.markChatAsRead({ chatId: message.chat_id });
+        } catch (readError) {
+          console.error('Error marking chat as read:', readError);
+        }
       }
     }
   }

@@ -1,4 +1,4 @@
-import { BotApiService, DeleteMessageData, RegisterWebhookData, SendMessageData } from "../bot-api-service.interface";
+import { BotApiService, DeleteMessageData, MarkChatAsReadData, RegisterWebhookData, SendMessageData } from "../bot-api-service.interface";
 import { AvitoSendMessageRequest, AvitoSendMessageResponse, AvitoWebhookPayload } from "./avito-types";
 import { AvitoAuthService } from "./avito-auth.service";
 
@@ -32,6 +32,8 @@ export class AvitoApiService implements BotApiService {
       body: JSON.stringify(requestBody),
     });
 
+    
+    console.log(response)
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Unknown error' })) as { message?: string };
       throw new Error(`Failed to send message: ${error.message || response.statusText}`);
@@ -52,9 +54,12 @@ export class AvitoApiService implements BotApiService {
         'Content-Type': 'application/json',
       },
     });
+    
+    console.log(response.status);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Unknown error' })) as { message?: string };
+      console.log(error)
       throw new Error(`Failed to delete message: ${error.message || response.statusText}`);
     }
   }
@@ -80,5 +85,23 @@ export class AvitoApiService implements BotApiService {
 
     const result = await response.json() as { ok?: boolean };
     return result.ok === true;
+  }
+
+  async markChatAsRead(data: MarkChatAsReadData): Promise<void> {
+    const url = `${this.baseUrl}/messenger/v1/accounts/${this.userId}/chats/${data.chatId}/read`;
+    const accessToken = await this.authService.getAccessToken();
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Unknown error' })) as { message?: string };
+      throw new Error(`Failed to mark chat as read: ${error.message || response.statusText}`);
+    }
   }
 }

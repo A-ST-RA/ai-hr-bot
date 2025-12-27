@@ -11,11 +11,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "key": {
-      "type": "string",
-      "required": true,
-      "unique": true
-    },
     "question": {
       "type": "text",
       "required": false
@@ -23,6 +18,10 @@
     "answer": {
       "type": "text",
       "required": true
+    },
+    "key": {
+      "type": "uid",
+      "targetField": "question"
     }
   }
 }

@@ -18,6 +18,9 @@ export interface RegisterWebhookData {
   url: string;
 }
 
+export interface MarkChatAsReadData {
+  chatId: string;
+}
 
 export interface BotApiService {
   sendMessage(data: SendMessageData): Promise<SendMessageData>;
@@ -25,4 +28,6 @@ export interface BotApiService {
   deleteMessage(data: DeleteMessageData): Promise<void>;
 
   registerWebhook(data: RegisterWebhookData): Promise<boolean>;
+
+  markChatAsRead(data: MarkChatAsReadData): Promise<void>;
 }
