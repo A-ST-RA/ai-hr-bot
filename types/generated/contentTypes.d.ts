@@ -430,6 +430,94 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAutoMessageAfterDelayAutoMessageAfterDelay
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'auto_message_after_delays';
+  info: {
+    displayName: 'autoMessageAfterDelayUserList';
+    pluralName: 'auto-message-after-delays';
+    singularName: 'auto-message-after-delay';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amountOfCalls: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    avitoUserId: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    isAcceptOffer: Schema.Attribute.Boolean;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::auto-message-after-delay.auto-message-after-delay'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiAutoMessageAutoMessage extends Struct.CollectionTypeSchema {
+  collectionName: 'auto_messages';
+  info: {
+    displayName: 'autoMessage';
+    pluralName: 'auto-messages';
+    singularName: 'auto-message';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::auto-message.auto-message'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    textOfMessage: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiIncomingQuestionIncomingQuestion
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'incoming_questions';
+  info: {
+    displayName: 'incomingQuestion';
+    pluralName: 'incoming-questions';
+    singularName: 'incoming-question';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    avitoId: Schema.Attribute.Text;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::incoming-question.incoming-question'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
   collectionName: 'questions';
   info: {
@@ -970,6 +1058,9 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::auto-message-after-delay.auto-message-after-delay': ApiAutoMessageAfterDelayAutoMessageAfterDelay;
+      'api::auto-message.auto-message': ApiAutoMessageAutoMessage;
+      'api::incoming-question.incoming-question': ApiIncomingQuestionIncomingQuestion;
       'api::question.question': ApiQuestionQuestion;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

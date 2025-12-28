@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "auto_message_after_delays",
+  "info": {
+    "singularName": "auto-message-after-delay",
+    "pluralName": "auto-message-after-delays",
+    "displayName": "autoMessageAfterDelayUserList"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "avitoUserId": {
+      "type": "string"
+    },
+    "isAcceptOffer": {
+      "type": "boolean"
+    },
+    "amountOfCalls": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

@@ -25,8 +25,9 @@ export class AvitoWebhookHandler {
   /**
    * Обрабатывает входящее WebHook сообщение от Avito
    * @param payload Данные WebHook
+   * @param botUserId ID пользователя бота (для определения, является ли сообщение от бота)
    */
-  async handleWebhook(payload: AvitoWebhookPayload): Promise<void> {
+  async handleWebhook(payload: AvitoWebhookPayload, botUserId: string): Promise<void> {
     // Проверяем тип сообщения
     console.log(payload)
     if (payload.type !== 'message') {
@@ -35,8 +36,21 @@ export class AvitoWebhookHandler {
 
     const message = payload.value;
 
+    // Игнорируем сообщения, отправленные от лица бота
+    // Если author_id совпадает с user_id (наш аккаунт), значит это мы отправили
+    const botUserIdNum = parseInt(botUserId, 10);
+    if (message.author_id === botUserIdNum || message.author_id === message.user_id) {
+      console.log('Ignoring message from bot (author_id matches bot user_id)');
+      // Отмечаем чат как прочитанный, чтобы Avito перестал отправлять повторные webhook
+      try {
+        await this.botApiService.markChatAsRead({ chatId: message.chat_id });
+      } catch (error) {
+        console.error('Error marking chat as read for bot message:', error);
+      }
+      return;
+    }
+
     // Обрабатываем только текстовые сообщения
-    // В WebHook приходят только входящие сообщения (от пользователя к нам)
     // Проверяем, что это текстовое сообщение
     if (message.type !== 'text') {
       return;

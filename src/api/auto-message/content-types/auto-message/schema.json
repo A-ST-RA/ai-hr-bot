@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "auto_messages",
+  "info": {
+    "singularName": "auto-message",
+    "pluralName": "auto-messages",
+    "displayName": "autoMessage"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "textOfMessage": {
+      "type": "text"
+    }
+  }
+}

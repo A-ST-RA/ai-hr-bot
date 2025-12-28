@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "incoming_questions",
+  "info": {
+    "singularName": "incoming-question",
+    "pluralName": "incoming-questions",
+    "displayName": "incomingQuestion"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "avitoId": {
+      "type": "text"
+    }
+  }
+}
