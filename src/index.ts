@@ -79,7 +79,7 @@ export default {
       const autoMessageService = new AutoMessageService(strapi, avitoApiService);
 
       // Запускаем проверку каждые 30 секунд
-      const checkInterval = 5 * 1000; // 30 секунд
+      const checkInterval = 15 * 60 * 1000; // 30 секунд
       
       setInterval(async () => {
         try {

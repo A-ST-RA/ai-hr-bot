@@ -267,4 +267,34 @@ export class AutoMessageService {
     const userState = await this.findOrCreateUserState(chatId, userId);
     return userState.lastAutoMessageText || null;
   }
+
+  /**
+   * Получает случайное сообщение из базы auto-message-accepted-message
+   */
+  async getRandomAcceptedMessage(): Promise<string | null> {
+    // Получаем все сообщения (включая неопубликованные)
+    const allMessages = await this.strapi.entityService.findMany(
+      'api::auto-message-accepted-message.auto-message-accepted-message',
+      {}
+    );
+
+    if (!allMessages || allMessages.length === 0) {
+      console.warn('No accepted messages found in database');
+      return null;
+    }
+
+    // Фильтруем только те, у которых есть текст
+    const messagesWithText = allMessages.filter(
+      (msg: any) => msg.text && msg.text.trim().length > 0
+    );
+
+    if (messagesWithText.length === 0) {
+      console.warn('No accepted messages with text found in database');
+      return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * messagesWithText.length);
+    const message = messagesWithText[randomIndex] as any;
+    return message.text;
+  }
 }

@@ -112,27 +112,46 @@ export class AvitoWebhookHandler {
         }
       }
 
-      // Получаем все вопросы из базы данных
-      const allQuestions = await this.questionAnswerService.getAllQuestions();
-
-      // Преобразуем в формат для DeepSeek
-      const questionsForLLM = allQuestions.map((q) => ({
-        key: q.key,
-        question: q.question || q.key, // Используем question если есть, иначе key
-      }));
+      // Проверяем, хочет ли пользователь записаться на стажировку
+      const internshipSignupResult = await this.deepSeekService.detectInternshipSignup(userQuestion);
       
-      console.log(questionsForLLM);
+      console.log('[Internship signup detection]', internshipSignupResult);
 
-      // Отправляем в LLM для определения наиболее подходящего вопроса
-      const matchedKey = await this.deepSeekService.findMatchingQuestion(
-        userQuestion,
-        questionsForLLM
-      );
+      let answer: string;
 
-      // Получаем ответ по ключу (или default)
-      const answer = await this.questionAnswerService.getAnswerByKeyOrDefault(
-        matchedKey || 'default'
-      );
+      if (internshipSignupResult.wantsInternship) {
+        // Если пользователь хочет записаться на стажировку, отправляем сообщение из auto-message-accepted-message
+        const acceptedMessage = await this.autoMessageService.getRandomAcceptedMessage();
+        if (acceptedMessage) {
+          answer = acceptedMessage;
+        } else {
+          console.warn('No accepted messages found, falling back to default answer');
+          // Если нет сообщений в auto-message-accepted-message, используем дефолтный ответ
+          answer = await this.questionAnswerService.getAnswerByKeyOrDefault('default');
+        }
+      } else {
+        // Обычная логика: получаем ответ на вопрос
+        const allQuestions = await this.questionAnswerService.getAllQuestions();
+
+        // Преобразуем в формат для DeepSeek
+        const questionsForLLM = allQuestions.map((q) => ({
+          key: q.key,
+          question: q.question || q.key, // Используем question если есть, иначе key
+        }));
+        
+        console.log(questionsForLLM);
+
+        // Отправляем в LLM для определения наиболее подходящего вопроса
+        const matchedKey = await this.deepSeekService.findMatchingQuestion(
+          userQuestion,
+          questionsForLLM
+        );
+
+        // Получаем ответ по ключу (или default)
+        answer = await this.questionAnswerService.getAnswerByKeyOrDefault(
+          matchedKey || 'default'
+        );
+      }
 
       // Отправляем ответ пользователю
       const sendData: SendMessageData = {
