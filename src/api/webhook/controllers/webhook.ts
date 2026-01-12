@@ -9,6 +9,7 @@ import { AvitoApiService } from '../../../avito/avito-api.service';
 import { AvitoAuthService } from '../../../avito/avito-auth.service';
 import { DeepSeekApiService } from '../../../llm/deepseek-api.service';
 import { QuestionAnswerService } from '../../../services/question-answer.service';
+import { AutoMessageService } from '../../../services/auto-message.service';
 import { validateEnv } from '../../../config/env.validation';
 
 export default factories.createCoreController('api::question.question', ({ strapi }) => ({
@@ -57,10 +58,13 @@ export default factories.createCoreController('api::question.question', ({ strap
       const avitoApiService = new AvitoApiService(avitoAuthService, env.AVITO_USER_ID);
       const deepSeekService = new DeepSeekApiService(env.DEEPSEEK_API_KEY, env.DEEPSEEK_MODEL);
       const questionAnswerService = new QuestionAnswerService(strapi);
+      const autoMessageService = new AutoMessageService(strapi, avitoApiService);
       const webhookHandler = new AvitoWebhookHandler(
         avitoApiService,
         deepSeekService,
-        questionAnswerService
+        questionAnswerService,
+        autoMessageService,
+        strapi
       );
 
       // Обрабатываем WebHook (передаем user_id для проверки, что сообщение не от бота)

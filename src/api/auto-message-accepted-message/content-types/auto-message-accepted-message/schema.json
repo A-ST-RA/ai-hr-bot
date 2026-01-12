@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "auto_message_accepted_messages",
+  "info": {
+    "singularName": "auto-message-accepted-message",
+    "pluralName": "auto-message-accepted-messages",
+    "displayName": "autoMessageAcceptedMessage"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "text": {
+      "type": "text"
+    }
+  }
+}

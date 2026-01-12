@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reply_question_texts",
+  "info": {
+    "singularName": "reply-question-text",
+    "pluralName": "reply-question-texts",
+    "displayName": "replyQuestionText"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "text": {
+      "type": "text"
+    }
+  }
+}

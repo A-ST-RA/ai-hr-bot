@@ -2,6 +2,7 @@ import type { Core } from '@strapi/strapi';
 import { validateEnv } from './config/env.validation';
 import { AvitoApiService } from './avito/avito-api.service';
 import { AvitoAuthService } from './avito/avito-auth.service';
+import { AutoMessageService } from './services/auto-message.service';
 
 export default {
   /**
@@ -63,6 +64,67 @@ export default {
         strapi.log.warn('⚠️  WEBHOOK_URL not set, skipping automatic webhook registration');
         strapi.log.info('💡 To enable automatic webhook registration, set WEBHOOK_URL in your .env file');
       }
+
+      // Настраиваем cron job для проверки и отправки auto-messages
+      strapi.log.info('⏰ Setting up auto-message cron job...');
+      
+      const avitoAuthService = new AvitoAuthService(
+        env.AVITO_CLIENT_ID,
+        env.AVITO_CLIENT_SECRET
+      );
+      const avitoApiService = new AvitoApiService(
+        avitoAuthService,
+        env.AVITO_USER_ID
+      );
+      const autoMessageService = new AutoMessageService(strapi, avitoApiService);
+
+      // Запускаем проверку каждые 30 секунд
+      const checkInterval = 5 * 1000; // 30 секунд
+      
+      setInterval(async () => {
+        try {
+          // Получаем всех пользователей с lastQuestionTime (не null)
+          // и проверяем acceptedOffer в коде, так как enum может быть null
+          const allUsers = await strapi.entityService.findMany(
+            'api::auto-message-after-delay.auto-message-after-delay',
+            {
+              filters: {
+                lastQuestionTime: { $notNull: true },
+              },
+            }
+          );
+
+          // Фильтруем в коде: пропускаем только тех, кто не принял предложение
+          const users = allUsers?.filter(
+            (user: any) => user.acceptedOffer !== 'accepted'
+          ) || [];
+          
+          console.log(users);
+
+          if (!users || users.length === 0) {
+            return;
+          }
+
+          // Проверяем каждого пользователя и отправляем auto-message, если нужно
+          for (const user of users) {
+            try {
+              await autoMessageService.sendAutoMessageIfNeeded(
+                user.chatId,
+                user.avitoUserId
+              );
+            } catch (error: any) {
+              strapi.log.error(
+                `Error sending auto-message to user ${user.avitoUserId}:`,
+                error.message
+              );
+            }
+          }
+        } catch (error: any) {
+          strapi.log.error('Error in auto-message cron job:', error);
+        }
+      }, checkInterval);
+
+      strapi.log.info(`✅ Auto-message cron job started (checks every ${checkInterval / 1000} seconds)`);
     } catch (error: any) {
       strapi.log.error('❌ Bootstrap error:', error.message);
       // Не прерываем запуск, но логируем ошибку

@@ -430,6 +430,35 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAutoMessageAcceptedMessageAutoMessageAcceptedMessage
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'auto_message_accepted_messages';
+  info: {
+    displayName: 'autoMessageAcceptedMessage';
+    pluralName: 'auto-message-accepted-messages';
+    singularName: 'auto-message-accepted-message';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::auto-message-accepted-message.auto-message-accepted-message'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    text: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiAutoMessageAfterDelayAutoMessageAfterDelay
   extends Struct.CollectionTypeSchema {
   collectionName: 'auto_message_after_delays';
@@ -442,12 +471,19 @@ export interface ApiAutoMessageAfterDelayAutoMessageAfterDelay
     draftAndPublish: false;
   };
   attributes: {
+    acceptedOffer: Schema.Attribute.Enumeration<['accepted', 'declined']>;
+    acceptOfCallStatus: Schema.Attribute.Enumeration<['accepted', 'declined']>;
     amountOfCalls: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    avitoUserId: Schema.Attribute.String;
+    autoMessageAttempts: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<0>;
+    avitoUserId: Schema.Attribute.String & Schema.Attribute.Required;
+    chatId: Schema.Attribute.String & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    isAcceptOffer: Schema.Attribute.Boolean;
+    lastAutoMessageText: Schema.Attribute.Text;
+    lastAutoMessageTime: Schema.Attribute.DateTime;
+    lastQuestionTime: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -542,6 +578,35 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     question: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiReplyQuestionTextReplyQuestionText
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'reply_question_texts';
+  info: {
+    displayName: 'replyQuestionText';
+    pluralName: 'reply-question-texts';
+    singularName: 'reply-question-text';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::reply-question-text.reply-question-text'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    text: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1058,10 +1123,12 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::auto-message-accepted-message.auto-message-accepted-message': ApiAutoMessageAcceptedMessageAutoMessageAcceptedMessage;
       'api::auto-message-after-delay.auto-message-after-delay': ApiAutoMessageAfterDelayAutoMessageAfterDelay;
       'api::auto-message.auto-message': ApiAutoMessageAutoMessage;
       'api::incoming-question.incoming-question': ApiIncomingQuestionIncomingQuestion;
       'api::question.question': ApiQuestionQuestion;
+      'api::reply-question-text.reply-question-text': ApiReplyQuestionTextReplyQuestionText;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

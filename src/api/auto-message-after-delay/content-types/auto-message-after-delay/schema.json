@@ -11,15 +11,44 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "avitoUserId": {
-      "type": "string"
+    "chatId": {
+      "type": "string",
+      "required": true
     },
-    "isAcceptOffer": {
-      "type": "boolean"
+    "avitoUserId": {
+      "type": "string",
+      "required": true
+    },
+    "lastQuestionTime": {
+      "type": "datetime"
+    },
+    "lastAutoMessageTime": {
+      "type": "datetime"
+    },
+    "autoMessageAttempts": {
+      "type": "integer",
+      "default": 0
+    },
+    "acceptedOffer": {
+      "type": "enumeration",
+      "enum": [
+        "accepted",
+        "declined"
+      ]
+    },
+    "lastAutoMessageText": {
+      "type": "text"
     },
     "amountOfCalls": {
       "type": "integer",
       "default": 0
+    },
+    "acceptOfCallStatus": {
+      "type": "enumeration",
+      "enum": [
+        "accepted",
+        "declined"
+      ]
     }
   }
 }
