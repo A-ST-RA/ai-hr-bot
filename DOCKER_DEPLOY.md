@@ -4,9 +4,9 @@
 
 ## Структура
 
-- **nginx** - обратный прокси на порту 443 (HTTPS) и 80 (HTTP -> HTTPS редирект)
-- **app** - Node.js приложение (Strapi)
-- **postgres** - база данных PostgreSQL
+-   **nginx** - обратный прокси на порту 443 (HTTPS) и 80 (HTTP -> HTTPS редирект)
+-   **app** - Node.js приложение (Strapi)
+-   **postgres** - база данных PostgreSQL
 
 ## Быстрый старт
 
@@ -132,20 +132,20 @@ docker-compose restart app
 
 ### Обязательные
 
-- `AVITO_CLIENT_ID` - ID клиента Avito API
-- `AVITO_CLIENT_SECRET` - Секрет клиента Avito API
-- `AVITO_USER_ID` - ID пользователя Avito
-- `DEEPSEEK_API_KEY` - API ключ DeepSeek
-- `APP_KEYS` - Ключи приложения Strapi (4 ключа через запятую)
-- `DATABASE_PASSWORD` - Пароль базы данных
+-   `AVITO_CLIENT_ID` - ID клиента Avito API
+-   `AVITO_CLIENT_SECRET` - Секрет клиента Avito API
+-   `AVITO_USER_ID` - ID пользователя Avito
+-   `DEEPSEEK_API_KEY` - API ключ DeepSeek
+-   `APP_KEYS` - Ключи приложения Strapi (4 ключа через запятую)
+-   `DATABASE_PASSWORD` - Пароль базы данных
 
 ### Опциональные
 
-- `WEBHOOK_URL` - URL для автоматической регистрации webhook
-- `DEEPSEEK_MODEL` - Модель DeepSeek (по умолчанию: deepseek-chat)
-- `NGINX_HTTP_PORT` - Порт HTTP для nginx (по умолчанию: 80)
-- `NGINX_HTTPS_PORT` - Порт HTTPS для nginx (по умолчанию: 443)
-- `DATABASE_PORT` - Порт PostgreSQL (по умолчанию: 5432)
+-   `WEBHOOK_URL` - URL для автоматической регистрации webhook
+-   `DEEPSEEK_MODEL` - Модель DeepSeek (по умолчанию: deepseek-chat)
+-   `NGINX_HTTP_PORT` - Порт HTTP для nginx (по умолчанию: 80)
+-   `NGINX_HTTPS_PORT` - Порт HTTPS для nginx (по умолчанию: 443)
+-   `DATABASE_PORT` - Порт PostgreSQL (по умолчанию: 5432)
 
 ## SSL сертификаты для продакшена
 
@@ -159,8 +159,9 @@ cd nginx
 ```
 
 **Требования:**
-- Certbot должен быть установлен на хосте
-- Порты 80 и 443 должны быть свободны и доступны извне
+
+-   Certbot должен быть установлен на хосте
+-   Порты 80 и 443 должны быть свободны и доступны извне
 
 ### Вариант 2: Установка через Docker (рекомендуется)
 
@@ -172,8 +173,9 @@ cd nginx
 ```
 
 **Требования:**
-- Docker должен быть установлен
-- Порты 80 и 443 должны быть свободны и доступны извне
+
+-   Docker должен быть установлен
+-   Порты 80 и 443 должны быть свободны и доступны извне
 
 ### Что делают скрипты:
 
@@ -185,21 +187,23 @@ cd nginx
 ### Ручное обновление сертификата
 
 Если certbot установлен на хосте:
+
 ```bash
 ./nginx/ssl/renew-cert.sh your-domain.com
 ```
 
 Если используется Docker вариант:
+
 ```bash
 ./nginx/ssl/renew-cert-docker.sh your-domain.com
 ```
 
 ### Важные замечания:
 
-- ⚠️ Перед запуском скрипта убедитесь, что домен указывает на ваш сервер (A-запись)
-- ⚠️ Порты 80 и 443 должны быть открыты в файрволе
-- ⚠️ Nginx контейнер будет временно остановлен во время получения сертификата
-- ⚠️ После установки обновите `WEBHOOK_URL` в `.env` файле на `https://your-domain.com/api/webhook/avito`
+-   ⚠️ Перед запуском скрипта убедитесь, что домен указывает на ваш сервер (A-запись)
+-   ⚠️ Порты 80 и 443 должны быть открыты в файрволе
+-   ⚠️ Nginx контейнер будет временно остановлен во время получения сертификата
+-   ⚠️ После установки обновите `WEBHOOK_URL` в `.env` файле на `https://your-domain.com/api/webhook/avito`
 
 ## Проблемы и решения
 
