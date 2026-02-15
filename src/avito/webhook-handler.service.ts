@@ -130,27 +130,27 @@ export class AvitoWebhookHandler {
           answer = await this.questionAnswerService.getAnswerByKeyOrDefault('default');
         }
       } else {
-        // Обычная логика: получаем ответ на вопрос
-        const allQuestions = await this.questionAnswerService.getAllQuestions();
+        let vacancyContext: { title?: string; description?: string } | null = null;
+        if (message.chat_type === 'u2i') {
+          try {
+            if (message.item_id) {
+              const details = await this.botApiService.getVacancyDetails(message.item_id);
+              if (details?.title || details?.description) {
+                vacancyContext = { title: details.title, description: details.description };
+              }
+            }
+            if (!vacancyContext) {
+              const chatContext = await this.botApiService.getChatItemContext(chatId);
+              if (chatContext?.title) {
+                vacancyContext = { title: chatContext.title };
+              }
+            }
+          } catch (err) {
+            console.error('Error fetching vacancy/chat context:', err);
+          }
+        }
 
-        // Преобразуем в формат для DeepSeek
-        const questionsForLLM = allQuestions.map((q) => ({
-          key: q.key,
-          question: q.question || q.key, // Используем question если есть, иначе key
-        }));
-        
-        console.log(questionsForLLM);
-
-        // Отправляем в LLM для определения наиболее подходящего вопроса
-        const matchedKey = await this.deepSeekService.findMatchingQuestion(
-          userQuestion,
-          questionsForLLM
-        );
-
-        // Получаем ответ по ключу (или default)
-        answer = await this.questionAnswerService.getAnswerByKeyOrDefault(
-          matchedKey || 'default'
-        );
+        answer = await this.deepSeekService.generateAnswerFromVacancy(userQuestion, vacancyContext);
       }
 
       // Отправляем ответ пользователю

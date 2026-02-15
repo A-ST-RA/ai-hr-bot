@@ -1,4 +1,4 @@
-import { BotApiService, DeleteMessageData, MarkChatAsReadData, RegisterWebhookData, SendMessageData } from "../bot-api-service.interface";
+import { BotApiService, ChatItemContext, DeleteMessageData, MarkChatAsReadData, RegisterWebhookData, SendMessageData, VacancyDetails } from "../bot-api-service.interface";
 import { AvitoSendMessageRequest, AvitoSendMessageResponse, AvitoWebhookPayload } from "./avito-types";
 import { AvitoAuthService } from "./avito-auth.service";
 
@@ -103,5 +103,70 @@ export class AvitoApiService implements BotApiService {
       const error = await response.json().catch(() => ({ message: 'Unknown error' })) as { message?: string };
       throw new Error(`Failed to mark chat as read: ${error.message || response.statusText}`);
     }
+  }
+
+  async getChatItemContext(chatId: string): Promise<ChatItemContext | null> {
+    const url = `${this.baseUrl}/messenger/v2/accounts/${this.userId}/chats/${chatId}`;
+    const accessToken = await this.authService.getAccessToken();
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json() as {
+      context?: {
+        type?: string;
+        value?: {
+          id?: number;
+          title?: string;
+          price_string?: string;
+          url?: string;
+        };
+      };
+    };
+
+    const value = data?.context?.type === 'item' ? data.context.value : undefined;
+    if (!value) {
+      return null;
+    }
+
+    return {
+      itemId: value.id,
+      title: value.title,
+      priceString: value.price_string,
+      url: value.url,
+    };
+  }
+
+  async getVacancyDetails(vacancyId: number): Promise<VacancyDetails | null> {
+    const url = `${this.baseUrl}/job/v2/vacancies/${vacancyId}?fields=title,description`;
+    const accessToken = await this.authService.getAccessToken();
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json() as { title?: string; description?: string };
+
+    return {
+      title: data.title,
+      description: data.description,
+    };
   }
 }

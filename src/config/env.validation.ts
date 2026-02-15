@@ -24,7 +24,7 @@ const urlOrIpSchema = z.string().refine(
 const envSchema = z.object({
   AVITO_CLIENT_ID: z.string().min(1, 'AVITO_CLIENT_ID is required'),
   AVITO_CLIENT_SECRET: z.string().min(1, 'AVITO_CLIENT_SECRET is required'),
-  AVITO_USER_ID: z.string().min(1, 'AVITO_USER_ID is required'),
+  AVITO_USER_ID: z.string().optional().default(''),
   DEEPSEEK_API_KEY: z.string().min(1, 'DEEPSEEK_API_KEY is required'),
   DEEPSEEK_MODEL: z.string().optional().default('deepseek-chat'),
   WEBHOOK_URL: urlOrIpSchema,

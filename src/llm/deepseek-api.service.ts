@@ -64,22 +64,29 @@ export class DeepSeekApiService {
    * Находит наиболее подходящий вопрос из списка вопросов
    * @param userQuestion Вопрос пользователя
    * @param availableQuestions Список доступных вопросов с ключами
+   * @param vacancyContext Контекст вакансии (название/описание), по которой пишут — учитывай при выборе ответа
    * @returns Ключ наиболее подходящего вопроса или null если не найден
    */
   async findMatchingQuestion(
     userQuestion: string,
-    availableQuestions: Array<{ key: string; question: string }>
+    availableQuestions: Array<{ key: string; question: string }>,
+    vacancyContext?: { title?: string; description?: string } | null
   ): Promise<string | null> {
     const questionsList = availableQuestions
       .map((q) => `- "${q.key}": ${q.question}`)
       .join('\n');
 
-    const systemPrompt = `Ты помощник для определения наиболее подходящего вопроса из списка.
+    const vacancyBlock = vacancyContext?.title || vacancyContext?.description
+      ? `\nКонтекст вакансии (объявления), по которому пишет пользователь:\nНазвание: ${vacancyContext.title || '—'}\n${vacancyContext.description ? `Описание: ${vacancyContext.description}` : ''}\n\nУчитывай контекст вакансии при выборе наиболее релевантного вопроса.\n`
+      : '';
 
+    const systemPrompt = `Ты помощник для определения наиболее подходящего вопроса из списка.
+${vacancyBlock}
 Твоя задача:
 1. Проанализировать вопрос пользователя
-2. Найти наиболее похожий вопрос из предоставленного списка
-3. Вернуть ТОЛЬКО JSON в формате: {"questionKey": "ключ_вопроса"}
+2. Учесть контекст вакансии (если указан), по которой пишет пользователь
+3. Найти наиболее похожий вопрос из предоставленного списка
+4. Вернуть ТОЛЬКО JSON в формате: {"questionKey": "ключ_вопроса"}
 
 ВАЖНО:
 - Отвечай ТОЛЬКО валидным JSON, без дополнительных комментариев
@@ -111,6 +118,64 @@ ${questionsList}
       console.error('Error in DeepSeek API:', error);
       return 'default';
     }
+  }
+
+  async generateAnswerFromVacancy(
+    userQuestion: string,
+    vacancyContext: { title?: string; description?: string } | null
+  ): Promise<string> {
+    if (!vacancyContext?.title && !vacancyContext?.description) {
+      return 'Не удалось определить вакансию. Напишите, пожалуйста, по какому объявлению вопрос.';
+    }
+
+    const vacancyText = [
+      vacancyContext.title ? `Название вакансии: ${vacancyContext.title}` : '',
+      vacancyContext.description ? `Описание вакансии:\n${vacancyContext.description}` : '',
+    ].filter(Boolean).join('\n\n');
+
+    const systemPrompt = `Ты вежливый HR-ассистент. Отвечай на вопросы соискателей строго на основе текста вакансии ниже. Не придумывай факты — только то, что есть в описании. Если в описании нет ответа, так и скажи кратко. Отвечай кратко, по делу, 1–3 предложения. Без вступлений вроде "Согласно описанию".`;
+
+    const userPrompt = `${vacancyText}\n\n---\nВопрос соискателя: ${userQuestion}\n\nДай ответ по вакансии.`;
+
+    const messages: DeepSeekMessage[] = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ];
+
+    try {
+      const response = await this.sendRequestText(messages, 600);
+      const text = (response?.trim() || '').slice(0, 1000);
+      return text || 'Не удалось сформировать ответ. Попробуйте переформулировать вопрос.';
+    } catch (error) {
+      console.error('Error generating answer from vacancy:', error);
+      return 'Временная ошибка. Попробуйте задать вопрос позже.';
+    }
+  }
+
+  private async sendRequestText(messages: DeepSeekMessage[], maxTokens: number = 600): Promise<string> {
+    const requestBody = {
+      model: this.model,
+      messages,
+      temperature: 0.4,
+      max_tokens: maxTokens,
+    };
+
+    const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Unknown error' })) as { message?: string };
+      throw new Error(`DeepSeek API error: ${error.message || response.statusText}`);
+    }
+
+    const data = await response.json() as DeepSeekResponse;
+    return data.choices[0]?.message?.content ?? '';
   }
 
   private async sendRequest(messages: DeepSeekMessage[]): Promise<DeepSeekResponse> {

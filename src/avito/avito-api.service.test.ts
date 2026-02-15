@@ -173,4 +173,82 @@ describe('AvitoApiService', () => {
       await expect(avitoApiService.registerWebhook(webhookData)).rejects.toThrow('Failed to register webhook');
     });
   });
+
+  describe('getChatItemContext', () => {
+    it('should return item context when chat has item context', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          context: {
+            type: 'item',
+            value: {
+              id: 7867794648,
+              title: 'Менеджер по продажам',
+              price_string: 'от 80 000 ₽',
+              url: 'https://avito.ru/...',
+            },
+          },
+        }),
+      });
+
+      const result = await avitoApiService.getChatItemContext('chat-123');
+
+      expect(result).toEqual({
+        itemId: 7867794648,
+        title: 'Менеджер по продажам',
+        priceString: 'от 80 000 ₽',
+        url: 'https://avito.ru/...',
+      });
+    });
+
+    it('should return null when chat has no item context', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ context: null }),
+      });
+
+      const result = await avitoApiService.getChatItemContext('chat-123');
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when request fails', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+
+      const result = await avitoApiService.getChatItemContext('chat-123');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getVacancyDetails', () => {
+    it('should return vacancy title and description', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          title: 'Менеджер по продажам',
+          description: 'Ищем активного менеджера. График 5/2.',
+        }),
+      });
+
+      const result = await avitoApiService.getVacancyDetails(2142059193);
+
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.avito.ru/job/v2/vacancies/2142059193?fields=title,description',
+        expect.objectContaining({ method: 'GET' })
+      );
+      expect(result).toEqual({
+        title: 'Менеджер по продажам',
+        description: 'Ищем активного менеджера. График 5/2.',
+      });
+    });
+
+    it('should return null when vacancy not found or no access', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+
+      const result = await avitoApiService.getVacancyDetails(999);
+
+      expect(result).toBeNull();
+    });
+  });
 });

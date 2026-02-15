@@ -22,6 +22,18 @@ export interface MarkChatAsReadData {
   chatId: string;
 }
 
+export interface ChatItemContext {
+  itemId?: number;
+  title?: string;
+  priceString?: string;
+  url?: string;
+}
+
+export interface VacancyDetails {
+  title?: string;
+  description?: string;
+}
+
 export interface BotApiService {
   sendMessage(data: SendMessageData): Promise<SendMessageData>;
 
@@ -30,4 +42,8 @@ export interface BotApiService {
   registerWebhook(data: RegisterWebhookData): Promise<boolean>;
 
   markChatAsRead(data: MarkChatAsReadData): Promise<void>;
+
+  getChatItemContext(chatId: string): Promise<ChatItemContext | null>;
+
+  getVacancyDetails(vacancyId: number): Promise<VacancyDetails | null>;
 }
