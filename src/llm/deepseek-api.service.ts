@@ -122,20 +122,21 @@ ${questionsList}
 
   async generateAnswerFromVacancy(
     userQuestion: string,
-    vacancyContext: { title?: string; description?: string } | null
+    vacancyContext: { title?: string; description?: string; conditionsText?: string } | null
   ): Promise<string> {
-    if (!vacancyContext?.title && !vacancyContext?.description) {
+    if (!vacancyContext?.title && !vacancyContext?.description && !vacancyContext?.conditionsText) {
       return 'Не удалось определить вакансию. Напишите, пожалуйста, по какому объявлению вопрос.';
     }
 
     const vacancyText = [
       vacancyContext.title ? `Название вакансии: ${vacancyContext.title}` : '',
       vacancyContext.description ? `Описание вакансии:\n${vacancyContext.description}` : '',
+      vacancyContext.conditionsText ? vacancyContext.conditionsText : '',
     ].filter(Boolean).join('\n\n');
 
     const systemPrompt = `Ты вежливый HR-ассистент. Отвечай на вопросы соискателей строго на основе текста вакансии ниже. Не придумывай факты — только то, что есть в описании. Отвечай кратко, по делу, 1–3 предложения. Без вступлений вроде "Согласно описанию".
 
-Если в описании вакансии НЕТ информации, которая отвечает на вопрос соискателя, ответь строго так (ничего не меняя): «О деталях, которые не указаны в тексте описания вакансии, предлагаю спросить у менеджера при первичном собеседовании по телефону. Когда готовы принять звонок?»
+Если в тексте вакансии ниже (описание и условия) НЕТ информации, которая отвечает на вопрос соискателя, ответь строго так (ничего не меняя): «О деталях, которые не указаны в тексте описания вакансии, предлагаю спросить у менеджера при первичном собеседовании по телефону. Когда готовы принять звонок?»
 
 Учитывай типичные сокращения в вакансиях: 5/2, 2/2, 3/3 и т.п. — это график работы (рабочие дни / выходные). Расшифровывай их в ответе, когда уместно (например: "График 5/2 — пять рабочих дней, два выходных"). Аналогично трактуй упоминания графика, зарплаты, условий из описания.`;
 

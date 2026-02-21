@@ -130,13 +130,13 @@ export class AvitoWebhookHandler {
           answer = await this.questionAnswerService.getAnswerByKeyOrDefault('default');
         }
       } else {
-        let vacancyContext: { title?: string; description?: string } | null = null;
+        let vacancyContext: { title?: string; description?: string; conditionsText?: string } | null = null;
         if (message.chat_type === 'u2i') {
           try {
             if (message.item_id) {
               const details = await this.botApiService.getVacancyDetails(message.item_id);
-              if (details?.title || details?.description) {
-                vacancyContext = { title: details.title, description: details.description };
+              if (details?.title || details?.description || details?.conditionsText) {
+                vacancyContext = { title: details.title, description: details.description, conditionsText: details.conditionsText };
               }
             }
             if (!vacancyContext) {

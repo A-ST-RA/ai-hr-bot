@@ -2,6 +2,14 @@ import { BotApiService, ChatItemContext, DeleteMessageData, MarkChatAsReadData, 
 import { AvitoSendMessageRequest, AvitoSendMessageResponse, AvitoWebhookPayload } from "./avito-types";
 import { AvitoAuthService } from "./avito-auth.service";
 
+interface AvitoJobVacancyResponse {
+  title?: string;
+  description?: string;
+  salary?: number;
+  params?: Record<string, unknown>;
+  addressDetails?: Record<string, unknown>;
+}
+
 export class AvitoApiService implements BotApiService {
   private readonly baseUrl = 'https://api.avito.ru';
   private readonly authService: AvitoAuthService;
@@ -147,7 +155,8 @@ export class AvitoApiService implements BotApiService {
   }
 
   async getVacancyDetails(vacancyId: number): Promise<VacancyDetails | null> {
-    const url = `${this.baseUrl}/job/v2/vacancies/${vacancyId}?fields=title,description`;
+    const paramsList = 'address,schedule,employment,experience,education_level,bonuses,payout_frequency,work_days_per_week,work_hours_per_day,medical_book,paid_period,taxes,vacancy_code,profession,grade,driving_experience,driving_license_category,is_company_car,is_side_job,registration_method,work_format,business_area,age_preferences,shifts,salary_base_bonus,salary_base_range,tools_availability,vehicle_type,worker_class';
+    const url = `${this.baseUrl}/job/v2/vacancies/${vacancyId}?fields=title,description,salary&params=${paramsList}`;
     const accessToken = await this.authService.getAccessToken();
 
     const response = await fetch(url, {
@@ -162,11 +171,65 @@ export class AvitoApiService implements BotApiService {
       return null;
     }
 
-    const data = await response.json() as { title?: string; description?: string };
+    const data = await response.json() as AvitoJobVacancyResponse;
+    const conditionsText = this.formatVacancyConditions(data);
 
     return {
       title: data.title,
       description: data.description,
+      conditionsText: conditionsText || undefined,
     };
+  }
+
+  private formatVacancyConditions(data: AvitoJobVacancyResponse): string {
+    const lines: string[] = [];
+    if (data.params && typeof data.params === 'object') {
+      const p = data.params as Record<string, unknown>;
+      const labels: Record<string, string> = {
+        vacancy_code: 'Код вакансии',
+        schedule: 'График',
+        employment: 'Занятость',
+        registration_method: 'Способ оформления',
+        work_days_per_week: 'Количество рабочих дней в неделю',
+        work_hours_per_day: 'Количество рабочих часов в день',
+        payout_frequency: 'Частота выплат',
+        paid_period: 'Период оплаты',
+        profession: 'Профессия',
+        business_area: 'Сфера деятельности компании',
+        bonuses: 'Что получают работники',
+        age_preferences: 'В том числе для кандидатов',
+        experience: 'Опыт работы',
+        education_level: 'Образование',
+        medical_book: 'Медкнижка',
+        address: 'Адрес',
+        work_format: 'Формат работы',
+        is_side_job: 'Подработка',
+        grade: 'Уровень',
+        driving_experience: 'Опыт вождения',
+        driving_license_category: 'Категория прав',
+        is_company_car: 'Служебный автомобиль',
+        taxes: 'Налоги',
+        shifts: 'Смены',
+        salary_base_bonus: 'Бонус к зарплате',
+        salary_base_range: 'Диапазон зарплаты',
+        tools_availability: 'Наличие инструментов',
+        vehicle_type: 'Тип транспорта',
+        worker_class: 'Класс работника',
+      };
+      for (const [key, label] of Object.entries(labels)) {
+        const val = p[key];
+        if (val === undefined || val === null) continue;
+        if (typeof val === 'object' && val !== null && !Array.isArray(val)) continue;
+        const str = Array.isArray(val) ? (val as string[]).join(', ') : String(val);
+        if (str && str !== '[]') lines.push(`${label}: ${str}`);
+      }
+    }
+    if (data.addressDetails && typeof data.addressDetails === 'object') {
+      const a = data.addressDetails as Record<string, unknown>;
+      const addr = [a.address, a.city, a.province].filter(Boolean).join(', ');
+      if (addr) lines.push(`Расположение: ${addr}`);
+    }
+    if (lines.length === 0) return '';
+    return 'Условия и требования:\n' + lines.join('\n');
   }
 }

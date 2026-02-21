@@ -32,6 +32,7 @@ export interface ChatItemContext {
 export interface VacancyDetails {
   title?: string;
   description?: string;
+  conditionsText?: string;
 }
 
 export interface BotApiService {
