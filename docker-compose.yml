@@ -32,6 +32,13 @@ services:
             APP_KEYS: ${APP_KEYS}
             NODE_ENV: ${NODE_ENV:-production}
 
+            # Strapi admin / API secrets
+            ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+            API_TOKEN_SALT: ${API_TOKEN_SALT}
+            TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT}
+            JWT_SECRET: ${JWT_SECRET}
+            ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+
             # Database
             DATABASE_CLIENT: ${DATABASE_CLIENT:-postgres}
             DATABASE_HOST: ${DATABASE_HOST:-postgres}
