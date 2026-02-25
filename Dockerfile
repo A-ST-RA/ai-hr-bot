@@ -11,7 +11,8 @@ RUN yarn install --frozen-lockfile
 # Копируем исходный код
 COPY . .
 
-# Собираем приложение
+# Собираем приложение (heap 3GB; на сервере желательно добавить swap 2–3 ГБ)
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 RUN yarn build
 
 # Production образ
