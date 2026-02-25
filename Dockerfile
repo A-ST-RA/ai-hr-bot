@@ -29,7 +29,7 @@ RUN yarn install --frozen-lockfile --production
 # Копируем собранное приложение из builder (админка в Strapi 5 лежит в dist/build)
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/config ./config
+COPY --from=builder /app/dist/config ./config
 COPY --from=builder /app/database ./database
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/types ./types
