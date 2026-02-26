@@ -36,9 +36,7 @@ COPY --from=builder /app/types ./types
 COPY --from=builder /app/favicon.png ./
 COPY --from=builder /app/package.json ./
 
-RUN mkdir -p node_modules/@strapi/admin/dist/server/server/build
-COPY --from=builder /app/dist/build ./node_modules/@strapi/admin/dist/server/server/build
-
+# Создаем директории для данных
 RUN mkdir -p .tmp/uploads
 
 # Открываем порт

@@ -1,14 +1,12 @@
-/**
- * Маршруты для WebHook от Avito
- */
-
 export default {
+  type: 'content-api',
   routes: [
     {
       method: 'POST',
-      path: '/webhook/avito',
+      path: '/avito',
       handler: 'webhook.handleAvitoWebhook',
       config: {
+        auth: false,
         policies: [],
         middlewares: [],
       },
