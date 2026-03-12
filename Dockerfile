@@ -20,23 +20,19 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Копируем package.json и yarn.lock
-COPY package.json yarn.lock ./
+# Копируем весь собранный Strapi из builder
+COPY --from=builder /app ./
 
-# Устанавливаем только production зависимости
-RUN yarn install --frozen-lockfile --production
+# Убираем dev-зависимости, ставим только production
+RUN rm -rf node_modules && yarn install --frozen-lockfile --production
 
-# Копируем собранное приложение из builder (админка в Strapi 5 лежит в dist/build)
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/dist/config ./config
-COPY --from=builder /app/database ./database
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/types ./types
-COPY --from=builder /app/favicon.png ./
-COPY --from=builder /app/package.json ./
+# Фикс плагина users-permissions: маршруты без route.info (кастомный webhook)
+RUN sed -i "s/route\.info\.type/route.info \&\& route.info.type/g" \
+  /app/node_modules/@strapi/plugin-users-permissions/dist/server/services/users-permissions.js
 
-# Создаем директории для данных
+RUN mkdir -p node_modules/@strapi/admin/dist/server/server/build
+COPY --from=builder /app/dist/build ./node_modules/@strapi/admin/dist/server/server/build
+
 RUN mkdir -p .tmp/uploads
 
 # Открываем порт
